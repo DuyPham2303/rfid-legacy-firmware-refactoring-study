@@ -1,0 +1,33 @@
+# Generated build outputs
+/build/
+/Object/
+*.o
+*.d
+*.elf
+*.map
+
+# Local editor and operating system files
+/.vscode/
+/README.md
+/note.md
+/review-checklist.md
+/chiến lược quản lý git.txt
+/.DS_Store
+Thumbs.db
+
+# Wokwi and simulation configuration/artifacts
+/diagram.json
+/wokwi.toml
+/Script/
+
+# Local database data; source code and SD card drivers remain tracked
+/Bsw/database/
+
+# Duplicate STM32CubeMX/FatFs experiment tree, separate from the legacy build
+/Bsw/sd_card/Core/
+/Bsw/sd_card/Drivers/
+/Bsw/sd_card/FATFS/
+/Bsw/sd_card/Middlewares/
+
+# Generated and vendor reference data not needed for this code review repo
+/STM32F103xx.svd
