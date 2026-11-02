@@ -22,15 +22,3 @@ CAN support and a full AUTOSAR-oriented redesign are future learning goals. They
 This repository focuses on reviewable firmware source and the minimum supporting files needed to understand the legacy project. Generated build outputs, local editor state, Wokwi simulation configuration, and local data files are excluded. Relevant C source and headers, startup assembly, linker/build files, and project documentation may be tracked.
 
 Changes to this legacy code should preserve the original behavior unless a change is explicitly documented and needed for an investigation or a deliberately completed legacy feature. Each versioned commit uses a short `Vx.y` title and updates the README with a concise summary of what changed from the preceding version.
-
-## Version history
-
-### V1.0 — Legacy Project baseline
-
-- Establishes the current workspace as the review baseline for the legacy RFID firmware.
-- Documents the purpose and boundaries of this repository and its source-focused tracking policy.
-- Does not claim functional refactoring or automotive compliance.
-
-## Intended portfolio use
-
-This repository can support a CV or interview discussion about the progression from legacy embedded firmware analysis to a planned, evidence-based refactor. Future entries should describe only work that has actually been implemented and reviewed, and should link changes to their rationale and verification results.
