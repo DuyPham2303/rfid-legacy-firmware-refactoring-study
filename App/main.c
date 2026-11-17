@@ -14,10 +14,11 @@ int main()
 	// Khởi tạo SysTick để tạo ngắt 1 ms và hàm delay.
 	SysTick_Init();
 	// Khởi tạo các ngoại vi dùng trong hệ thống.
+	display_UsbTtlModuleInit();
 	SignalOutput_ModuleInit();
-	LCD_ModuleInit();
-	RFID_ModuleInit();
-	SDcard_ModuleInit();
+	// display_LCDModuleInit();
+	// RFID_ModuleInit();
+	// SDcard_ModuleInit();
 
 	while (1)
 	{
@@ -26,17 +27,17 @@ int main()
 		{
 		case INIT_MODE:
 			// Hiển thị kết quả khởi tạo.
-			display_Init();
+			display_LCDInit();
 			break;
 		case IDLE_MODE:
 			// Hiển thị trạng thái chờ quét thẻ.
-			display_Idle();
+			display_LCDIdle();
 			// Đọc thẻ và chuyển chế độ theo kết quả kiểm tra.
 			RFID_Scan();
 			break;
 		case RUN_MODE:
 			// Hiển thị thông tin thẻ và trạng thái barrier.
-			display_Run();
+			display_LCDRun();
 			// Điều khiển servo thực hiện chu trình barrier.
 			Barrier_Control();
 			// Bật/tắt chức năng nhấp nháy LED theo trạng thái barrier.
@@ -44,14 +45,14 @@ int main()
 			break;
 		case ERROR_MODE:
 			// Hiển thị lỗi thẻ rồi quay lại trạng thái chờ.
-			display_Error();
+			display_LCDError();
 			break;
 		default:
 			// Báo lỗi khởi tạo nếu trạng thái không thuộc các chế độ trên.
-			display_Fail();
+			display_LCDFail();
 			break;
 		}
-		// Kết thúc hàm main sau lượt xử lý đầu tiên.
-		return 0;
 	}
+	// Kết thúc hàm main sau lượt xử lý đầu tiên.
+	return 0;
 }

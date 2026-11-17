@@ -19,8 +19,8 @@
 #define MISO_PIN GPIO_Pin_6
 #define MOSI_PIN GPIO_Pin_7
 
-/* for sd card only */
-#define SD_CS_PIN GPIO_Pin_4
+/* SD card chip select: PA3, separate from the RC522 chip select on PA4. */
+#define SD_CS_PIN GPIO_Pin_3
 
 /*for rc522 only*/
 #define RC522_RST_PORT GPIOB

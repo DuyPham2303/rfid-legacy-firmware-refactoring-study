@@ -3,20 +3,22 @@
 // Dùng chung các kiểu trạng thái của ứng dụng.
 #include "AppTypes.h"
 
-// Khởi tạo LCD.
-void LCD_ModuleInit();
-// Lấy chế độ hiện tại của ứng dụng.
-AppMode_e AppModeUpdate();
+// API USB-TTL: khởi tạo UART và gửi từng trạng thái ra Terminal.
+void display_UsbTtlModuleInit(void);
+void display_UsbTtlInit(void);
+void display_UsbTtlIdle(void);
+void display_UsbTtlRun(void);
+void display_UsbTtlError(void);
 
-// Hiển thị thông báo khởi tạo.
-void display_Init();
-// Hiển thị trạng thái chờ quét thẻ.
-void display_Idle();
-// Hiển thị trạng thái vận hành barrier.
-void display_Run();
-// Hiển thị lỗi đọc hoặc xác thực thẻ.
-void display_Error();
-// Hiển thị lỗi khởi tạo hệ thống.
-void display_Fail();
+// API LCD: khởi tạo màn hình và hiển thị các trạng thái ứng dụng.
+void display_LCDModuleInit(void);
+void display_LCDInit(void);
+void display_LCDIdle(void);
+void display_LCDRun(void);
+void display_LCDError(void);
+void display_LCDFail(void);
+
+// API điều phối: lấy chế độ hiện tại của ứng dụng.
+AppMode_e AppModeUpdate(void);
 
 #endif

@@ -3,8 +3,9 @@
 
 typedef enum
 {
-    IN_RANGE,  /* chua quay het bien do */
-    FULL_RANGE /* quay het bien do */
+    IN_RANGE, /* chua quay het bien do */
+    MIN_RANGE,
+    MAX_RANGE /* quay het bien do */
 } ServoStatus_e;
 
 void Servo_Init();

@@ -14,9 +14,10 @@ typedef enum ErrorType_e
 // Trạng thái tín hiệu của barrier và LED.
 typedef enum
 {
-    OPENING,
-    CLOSING,
-    ON,
+    RUNNING,
+    OPENED,
+    CLOSED,
+    BLINKING,
     OFF
 } OutSignalType_e;
 
@@ -38,13 +39,13 @@ typedef struct ModeStatusCfg_s
 // Thông tin người dùng liên kết với thẻ RFID.
 typedef struct RfidUserDtypeCfg_s
 {
-    char *name;          // Tên chủ xe.
-    char *license_plate; // Biển số xe.
+    const char *name;          // Tên chủ xe.
+    const char *license_plate; // Biển số xe.
 } RfidUserDtypeCfg_s;
 
 // Dữ liệu người dùng được nạp từ module thẻ SD.
 extern int count;
-extern struct RfidUserDtypeCfg_s *list_RfidUserData;
+extern const RfidUserDtypeCfg_s *list_RfidUserData;
 
 // Chỉ số người dùng đang được đối chiếu trong module RFID.
 extern uint8_t RfidUserData_Index;

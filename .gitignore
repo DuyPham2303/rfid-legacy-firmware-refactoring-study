@@ -15,9 +15,7 @@
 /.DS_Store
 Thumbs.db
 
-# Wokwi and simulation configuration/artifacts
-/diagram.json
-/wokwi.toml
+# Local helper scripts
 /Script/
 
 # Local database data; source code and SD card drivers remain tracked

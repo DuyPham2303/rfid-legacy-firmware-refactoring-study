@@ -11,7 +11,7 @@ static void eraseBuff()
     memset(txbuff, '\0', sizeof(txbuff));
 }
 
-void usbttl_Init()
+void Usbttl_Init()
 {
     GPIO_InitTypeDef usbttl_PinInit;
     // TX config

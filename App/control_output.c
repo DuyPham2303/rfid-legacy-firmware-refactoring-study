@@ -4,86 +4,104 @@
 #include "AppTypes.h"
 #include "Systick.h"
 
-// Mốc tick đo thời gian chờ giữa các lần chuyển động barrier.
-uint32_t wait_time = 0;
-// Mốc thời gian cập nhật góc servo.
-uint32_t servo_updateTime;
-// Trạng thái hiện tại của barrier và LED.
-DeviceStatusCfg_s DeviceStatusCfg = {.barrierSignal = CLOSING,
-									 .LedSignal = OFF};
+#define BARRIER_OPEN_WAIT_MS 3000U
 
-// Khởi tạo servo và LED.
+// kiểu mô tả hành vi cụ thể của barrier
+typedef enum
+{
+	BARRIER_MOVING_TO_OPEN,
+	BARRIER_MOVING_TO_CLOSED
+} BarrierMovement_e;
+
+static BarrierMovement_e barrierMovement; // lưu hướng di chuyển cụ thể của barrier
+static uint32_t barrierOpenedAtTick;	  // đo thời gian chờ của barrier sau khi mở
+DeviceStatusCfg_s DeviceStatusCfg;		  // Lưu trạng thái của barrier và led
+
+// Khởi tạo servo, LED và trạng thái ban đầu.
 void SignalOutput_ModuleInit()
 {
 	Servo_Init();
 	Led_Init();
+	DeviceStatusCfg.barrierSignal = CLOSED;
+	DeviceStatusCfg.LedSignal = OFF;
 }
 
-// Bật hoặc tắt ngắt nhấp nháy LED theo trạng thái chuyển động.
+// Nhấp nháy LED khi barrier đang di chuyển.
 void Led_Control()
 {
-	// Bật nhấp nháy khi barrier hoạt động và chưa bước vào thời gian chờ.
-	if (wait_time == 0 && ModeStatusCfg.apptype == RUN_MODE)
+
+	if (DeviceStatusCfg.barrierSignal == RUNNING &&
+		ModeStatusCfg.apptype == RUN_MODE)
 	{
 		if (DeviceStatusCfg.LedSignal == OFF)
 		{
-			// Bắt đầu ngắt timer khi servo chuyển động.
-			LedTimerInterruptEnable();
-			DeviceStatusCfg.LedSignal = ON;
+			LedTimerInterruptEnable(); // kích hoạt led nhấp nháy
+			DeviceStatusCfg.LedSignal = BLINKING;
 			ModeStatusCfg.IsLcdModeUpdate = true;
 		}
 	}
-	// Tắt nhấp nháy khi đang chờ hoặc barrier đã đóng.
-	else if (wait_time > 0 || DeviceStatusCfg.barrierSignal == CLOSING)
+	else if (DeviceStatusCfg.LedSignal == BLINKING)
 	{
-		if (DeviceStatusCfg.LedSignal == ON)
-		{
-			// Dừng ngắt timer khi servo ngừng chuyển động.
-			LedTimerInterruptDisable();
-			DeviceStatusCfg.LedSignal = OFF;
-			ModeStatusCfg.IsLcdModeUpdate = true;
-		}
+		LedTimerInterruptDisable(); // dừng nhấp nháy led
+		DeviceStatusCfg.LedSignal = OFF;
+		ModeStatusCfg.IsLcdModeUpdate = true;
 	}
 }
 
-// Điều khiển servo mở barrier, chờ xe qua và đóng barrier.
-void Barrier_Control()
+// Cập nhật servo theo hướng di chuyển hiện tại.
+static void updateBarrierMovement(ServoStatus_e *servoStatus)
 {
-	// Lưu trạng thái hành trình servo giữa các lần gọi.
-	static ServoStatus_e st;
-	// Thực hiện hành trình mở khi barrier đang đóng.
-	if (DeviceStatusCfg.barrierSignal == CLOSING)
+	// tác vụ mở barrier
+	if (barrierMovement == BARRIER_MOVING_TO_OPEN)
 	{
-		// Bắt đầu tính thời gian chờ khi servo hoàn tất hành trình mở.
-		if (st == FULL_RANGE)
+		if (*servoStatus == MAX_RANGE)
 		{
-			DeviceStatusCfg.barrierSignal = OPENING;
-			wait_time = getTick();
+			DeviceStatusCfg.barrierSignal = OPENED;
+			barrierOpenedAtTick = getTick(); // bắt đầu tính thời gian chờ trước khi đóng barrier
 		}
 		else
 		{
-			// Tiếp tục tăng góc servo để mở barrier.
-			st = Increase_ServoPos();
+			*servoStatus = Increase_ServoPos();
 		}
 	}
-	// Bắt đầu đóng barrier sau khi hết thời gian chờ.
-	if (DeviceStatusCfg.barrierSignal == OPENING && getTick() - wait_time > 3000)
+	// tác vụ đóng barrier
+	else
 	{
-		if (wait_time > 0)
+		if (*servoStatus == MIN_RANGE)
 		{
-			// Xóa mốc chờ trước khi bắt đầu hành trình đóng.
-			wait_time = 0;
-		}
-		// Chuyển về chế độ chờ khi servo hoàn tất hành trình đóng.
-		if (st == FULL_RANGE)
-		{
-			DeviceStatusCfg.barrierSignal = CLOSING;
+			DeviceStatusCfg.barrierSignal = CLOSED;
 			ModeStatusCfg.apptype = IDLE_MODE;
 		}
 		else
 		{
-			// Tiếp tục giảm góc servo để đóng barrier.
-			st = Decrease_ServoPos();
+			*servoStatus = Decrease_ServoPos();
 		}
+	}
+}
+
+// Mở barrier, chờ xe qua rồi đóng barrier.
+void Barrier_Control()
+{
+	static ServoStatus_e servoStatus;
+
+	// Update trạng thái và hành vi tương ứng khi barrier đang đóng
+	if (DeviceStatusCfg.barrierSignal == CLOSED)
+	{
+		barrierMovement = BARRIER_MOVING_TO_OPEN;
+		DeviceStatusCfg.barrierSignal = RUNNING;
+	}
+	// Update trạng thái và hành vi tương ứng khi barrier đang mở
+	else if (DeviceStatusCfg.barrierSignal == OPENED &&
+			 getTick() - barrierOpenedAtTick > BARRIER_OPEN_WAIT_MS)
+	{
+		barrierMovement = BARRIER_MOVING_TO_CLOSED;
+		DeviceStatusCfg.barrierSignal = RUNNING;
+	}
+
+	// xử lý nghiệp vụ đóng / mở  barrier dựa trên trạng thái hiện tại
+	if (DeviceStatusCfg.barrierSignal == RUNNING)
+	{
+		updateBarrierMovement(&servoStatus);
+		delay_ms(250);
 	}
 }
